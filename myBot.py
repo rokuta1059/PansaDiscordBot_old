@@ -23,15 +23,27 @@ def cypersRank(nickname):
         html = response.read()
         soup = BeautifulSoup(html, 'html.parser')
     
-    table = soup.find_all('dd')
-    nick = table[1].string.replace('\n', '')
-    clan = table[5].string.replace('\n', '')
-    rank = table[3].string.replace('\n', '')
-    mainRP = table[2].string.replace('\n', '')
-    bestRP = table[4].string.replace('\n', '')
-    winlose = table[6].string.replace('\n', '')
+    a = []
+    battle = []
+    img = []
+    
+    for firstTable in soup.find_all("div", "info info1"):
+        for firstValue in firstTable.find_all("td"):
+            a.append(firstValue.get_text())
 
-    return [nick, clan, rank, mainRP, bestRP, winlose]
+    for secondTable in soup.find_all("div", "info info2"):
+        for secondValue in secondTable.find_all("td"):
+            a.append(secondValue.get_text())
+    
+    for battleTable in soup.find_all("li", "show"):
+        for battleResult in battleTable.find_all("td"):
+            battle.append(battleResult.get_text().replace('\n', '').replace('\r', '').replace('\t', ''))
+
+        for battleResult in battleTable.find_all("td", "char"):
+            for imgList in battleResult.find_all("img"):
+                img.append(imgList.get("src"))
+
+    return cypersURL, a, battle, img
 
 @client.event
 async def on_ready():
@@ -49,19 +61,40 @@ async def on_message(message):
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
         nickname = mes[1]
-        cypersResult = cypersRank(nickname)
+        nickURL, log, battleResult, imgURL = cypersRank(nickname)
 
         embed = discord.Embed(
             title = '**CYPHERS**',
             description = '사이퍼즈 전적입니다',
             colour = discord.Colour.red()
         )
-        embed.add_field(name='닉네임', value=cypersResult[0])
-        embed.add_field(name='클랜', value=cypersResult[1])
-        embed.add_field(name='랭크', value=cypersResult[2])
-        embed.add_field(name='공식전 RP', value=cypersResult[3])
-        embed.add_field(name='최고 RP', value=cypersResult[4])
-        embed.add_field(name='승패', value=cypersResult[5])
+        embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
+        embed.add_field(name='닉네임', value=log[0])
+        embed.add_field(name='급수', value=log[1])
+        embed.add_field(name='클랜', value=log[2])
+        embed.add_field(name='승패', value=log[3])
+        embed.add_field(name='공식전 RP', value=log[4])
+        embed.add_field(name='최고 RP', value=log[5])
+        embed.add_field(name='티어', value=log[6])
+        await message.channel.send(embed=embed)
+
+        embed = discord.Embed(
+            title = '**가장 최근 경기 결과**',
+            url = nickURL,
+            description = '가장 최근에 플레이한 경기의 결과입니다.',
+            colour = discord.Colour.red()
+        )
+        embed.set_thumbnail(url=imgURL[0])
+        embed.add_field(name='플레이 시간 및 결과', value=battleResult[0])
+        embed.add_field(name='캐릭터', value=battleResult[1])
+        embed.add_field(name='레벨', value=battleResult[2])
+        embed.add_field(name='킬', value=battleResult[3])
+        embed.add_field(name='데스', value=battleResult[4])
+        embed.add_field(name='도움', value=battleResult[5])
+        embed.add_field(name='공격량', value=battleResult[6])
+        embed.add_field(name='피해량', value=battleResult[7])
+        embed.add_field(name='전투참여', value=battleResult[8])
+        embed.add_field(name='시야확보', value=battleResult[9])
         await message.channel.send(embed=embed)
 
 
