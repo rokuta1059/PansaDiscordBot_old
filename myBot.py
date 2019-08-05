@@ -61,6 +61,11 @@ async def on_message(message):
             await message.channel.send(absurb[int(mes[1])-1])
         else:
             await message.channel.send(random.choice(absurb))
+            
+    if message.content.startswith('!선택'):
+        mes = message.content.split(" ")
+        del mes[0]
+        await message.channel.send(random.choice(mes))
     
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
