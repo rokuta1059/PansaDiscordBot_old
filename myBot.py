@@ -56,7 +56,11 @@ async def on_ready():
 async def on_message(message):
 
     if message.content.startswith('!망언집'):
-        await message.channel.send(random.choice(list))
+        mes = message.content.split(" ")
+        if len(mes) == 2:
+            await message.channel.send(absurb[int(mes[1])-1])
+        else:
+            await message.channel.send(random.choice(absurb))
     
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
@@ -98,4 +102,5 @@ async def on_message(message):
         await message.channel.send(embed=embed)
 
 
+makeDiary()
 client.run('TOKEN')
