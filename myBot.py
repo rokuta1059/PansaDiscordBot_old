@@ -4,7 +4,7 @@ import random
 from discord.ext import commands
 from bs4 import BeautifulSoup
 import urllib.request
-import datetime
+from datetime import datetime, date, time
 
 client = discord.Client()
 absurb = []
@@ -45,6 +45,26 @@ def cypersRank(nickname):
 
     return cypersURL, a, battle, img
 
+def getMillDate(name):
+    f = open('militaryDate.txt', 'r')
+    mill = []
+    findName = False
+    while True:
+        line = f.readline()
+        if line.find(name) != -1:
+            mill = line.replace('\n', '').split(' ')
+            findName = True
+            break
+        if not line: break
+
+    if findName:
+        milldate = list(map(int, mill[1].split('.')))
+        now = datetime.now()
+        findDate = datetime(milldate[0], milldate[1], milldate[2]) - now
+        return "{0}쿤의 전역일은 {1}일 남았답니다~".format(mill[0], findDate.days)
+    else:
+        return "{0}쿤은 군인이 아닌거 같아요~".format(name)
+
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -66,6 +86,10 @@ async def on_message(message):
         mes = message.content.split(" ")
         del mes[0]
         await message.channel.send(random.choice(mes))
+    
+    if message.content.startswith('!전역일'):
+        mes = message.content.split(" ")
+        await message.channel.send(getMillDate(mes[1]))
     
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
