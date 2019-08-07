@@ -12,6 +12,7 @@ from datetime import datetime, date, time
 
 client = discord.Client()
 absurb = []
+conch = []
 
 def makeDiary():
     f = open('diaryData.txt', 'r', encoding="utf8")
@@ -19,6 +20,13 @@ def makeDiary():
     f.close()
     global absurb
     absurb = readlist.split('$$')
+    
+def makeConch():
+    f = open('magicConch.txt', 'r', encoding="utf8")
+    readlist = f.read()
+    f.close()
+    global conch
+    conch = readlist.split('\n')
 
 def cypersRank(nickname):
     parseNick = urllib.parse.quote(nickname)
@@ -63,6 +71,7 @@ def getMillDate(name):
             findName = True
             break
         if not line: break
+    f.close()
 
     if findName:
         milldate = list(map(int, mill[1].split('.')))
@@ -78,6 +87,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
+    await client.change_presence(activity=discord.Game(name='동아리방 먼지와 함께 뒹굴뒹굴', type=1))
 
 @client.event
 async def on_message(message):
@@ -93,6 +103,9 @@ async def on_message(message):
         mes = message.content.split(" ")
         del mes[0]
         await message.channel.send(random.choice(mes))
+        
+    if message.content.startswith('!소라고둥'):
+        await message.channel.send(random.choice(conch))
     
     if message.content.startswith('!전역일'):
         mes = message.content.split(" ")
@@ -144,4 +157,5 @@ async def on_message(message):
 
 
 makeDiary()
+makeConch()
 client.run('TOKEN')
