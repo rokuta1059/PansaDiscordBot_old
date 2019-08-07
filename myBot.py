@@ -91,6 +91,23 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    
+    if message.content.startswith('!도움'):
+        embed = discord.Embed(
+            title = '**판 사 요 정 등 장**',
+            description = '이거슨 판사 요정 커맨드 리스트',
+            colour = discord.Colour.green(),
+        )
+        embed.set_thumbnail(url=client.user.avatar_url)
+        embed.add_field(name='!망언집', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
+        embed.add_field(name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
+        embed.add_field(name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
+        embed.add_field(name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
+        embed.add_field(name='!사이퍼즈 (닉네임)', value='전적 알려줌.')
+        embed.add_field(name='!사이퍼즈 공식 (닉네임)', value='전적이랑 공식전 최근에 한거 결과 알려줌.')
+        embed.add_field(name='!사이퍼즈 일반 (닉네임)', value='전적이랑 일반전 최근에 한거 결과 알려줌.')
+        embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
+        await message.channel.send(embed=embed)
 
     if message.content.startswith('!망언집'):
         mes = message.content.split(" ")
@@ -104,7 +121,7 @@ async def on_message(message):
         del mes[0]
         await message.channel.send(random.choice(mes))
         
-    if message.content.startswith('!소라고둥'):
+    if message.content.startswith('!소라고둥') or message.content.startswith('소라고둥님') or message.content.startswith('마법의소라고둥님') or message.content.startswith('마법의 소라고둥님'):
         await message.channel.send(random.choice(conch))
     
     if message.content.startswith('!전역일'):
