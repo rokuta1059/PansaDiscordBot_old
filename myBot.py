@@ -14,7 +14,7 @@ client = discord.Client()
 absurb = []
 
 def makeDiary():
-    f = open('diaryData2.txt', 'r')
+    f = open('diaryData.txt', 'r', encoding="utf8")
     readlist = f.read()
     f.close()
     global absurb
@@ -22,7 +22,10 @@ def makeDiary():
 
 def cypersRank(nickname):
     parseNick = urllib.parse.quote(nickname)
-    cypersURL ='http://cyphers.nexon.com/cyphers/game/log/search/1/' + parseNick
+    if game == "공식":
+        cypersURL ='http://cyphers.nexon.com/cyphers/game/record/search/1/' + parseNick + '/1'
+    else:
+        cypersURL ='http://cyphers.nexon.com/cyphers/game/record/search/2/' + parseNick + '/2'
     with urllib.request.urlopen(cypersURL) as response:
         html = response.read()
         soup = BeautifulSoup(html, 'html.parser')
@@ -50,7 +53,7 @@ def cypersRank(nickname):
     return cypersURL, a, battle, img
 
 def getMillDate(name):
-    f = open('militaryDate.txt', 'r')
+    f = open('militaryDate.txt', 'r', encoding="utf8")
     mill = []
     findName = False
     while True:
@@ -97,13 +100,17 @@ async def on_message(message):
     
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
-        nickname = mes[1]
-        nickURL, log, battleResult, imgURL = cypersRank(nickname)
+        if mes[1] == '일반' or mes[1] == '공식':
+            nickname = mes[2]
+            nickURL, log, battleResult, imgURL = cypersRank(nickname, mes[1])
+        else:
+            nickname = mes[1]
+            nickURL, log, battleResult, imgURL = cypersRank(nickname, '')
 
         embed = discord.Embed(
             title = '**CYPHERS**',
             description = '사이퍼즈 전적입니다',
-            colour = discord.Colour.red()
+            colour = discord.Colour.red(),
         )
         embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
         embed.add_field(name='닉네임', value=log[0])
@@ -115,24 +122,25 @@ async def on_message(message):
         embed.add_field(name='티어', value=log[6])
         await message.channel.send(embed=embed)
 
-        embed = discord.Embed(
-            title = '**가장 최근 경기 결과**',
-            url = nickURL,
-            description = '가장 최근에 플레이한 경기의 결과입니다.',
-            colour = discord.Colour.red()
-        )
-        embed.set_thumbnail(url=imgURL[0])
-        embed.add_field(name='플레이 시간 및 결과', value=battleResult[0])
-        embed.add_field(name='캐릭터', value=battleResult[1])
-        embed.add_field(name='레벨', value=battleResult[2])
-        embed.add_field(name='킬', value=battleResult[3])
-        embed.add_field(name='데스', value=battleResult[4])
-        embed.add_field(name='도움', value=battleResult[5])
-        embed.add_field(name='공격량', value=battleResult[6])
-        embed.add_field(name='피해량', value=battleResult[7])
-        embed.add_field(name='전투참여', value=battleResult[8])
-        embed.add_field(name='시야확보', value=battleResult[9])
-        await message.channel.send(embed=embed)
+        if mes[1] == '일반' or mes[1] == '공식':
+            embed = discord.Embed(
+                title = '**가장 최근 경기 결과**',
+                url = nickURL,
+                description = '가장 최근에 플레이한 경기의 결과입니다.',
+                colour = discord.Colour.red()
+            )
+            embed.set_thumbnail(url=imgURL[0])
+            embed.add_field(name='플레이 시간 및 결과', value=battleResult[0])
+            embed.add_field(name='캐릭터', value=battleResult[1])
+            embed.add_field(name='레벨', value=battleResult[2])
+            embed.add_field(name='킬', value=battleResult[3])
+            embed.add_field(name='데스', value=battleResult[4])
+            embed.add_field(name='도움', value=battleResult[5])
+            embed.add_field(name='공격량', value=battleResult[6])
+            embed.add_field(name='피해량', value=battleResult[7])
+            embed.add_field(name='전투참여', value=battleResult[8])
+            embed.add_field(name='시야확보', value=battleResult[9])
+            await message.channel.send(embed=embed)
 
 
 makeDiary()
