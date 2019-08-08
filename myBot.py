@@ -142,15 +142,24 @@ async def on_message(message):
             description = '사이퍼즈 전적입니다',
             colour = discord.Colour.red(),
         )
-        embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
-        embed.add_field(name='닉네임', value=log[0])
-        embed.add_field(name='급수', value=log[1])
-        embed.add_field(name='클랜', value=log[2])
-        embed.add_field(name='승패', value=log[3])
-        embed.add_field(name='공식전 RP', value=log[4])
-        embed.add_field(name='최고 RP', value=log[5])
-        embed.add_field(name='티어', value=log[6])
-        await message.channel.send(embed=embed)
+        if len(log) <= 4:
+            embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
+            embed.add_field(name='닉네임', value=log[0])
+            embed.add_field(name='급수', value=log[1])
+            embed.add_field(name='클랜', value=log[2])
+            embed.add_field(name='승패 RP 등등', value='이번 시즌 공식전 기록이 없는 거시와요')
+            await message.channel.send(embed=embed)
+        
+        else:
+            embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
+            embed.add_field(name='닉네임', value=log[0])
+            embed.add_field(name='급수', value=log[1])
+            embed.add_field(name='클랜', value=log[2])
+            embed.add_field(name='승패', value=log[3])
+            embed.add_field(name='공식전 RP', value=log[4])
+            embed.add_field(name='최고 RP', value=log[5])
+            embed.add_field(name='티어', value=log[6])
+            await message.channel.send(embed=embed)
 
         if mes[1] == '일반' or mes[1] == '공식':
             embed = discord.Embed(
