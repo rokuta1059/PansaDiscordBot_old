@@ -52,7 +52,8 @@ def cypersRank(nickname):
     
     for battleTable in soup.find_all("li", "show"):
         for battleResult in battleTable.find_all("td"):
-            battle.append(battleResult.get_text().replace('\n', '').replace('\r', '').replace('\t', ''))
+            battle.append(battleResult.get_text().replace(
+                '\n', '').replace('\r', '').replace('\t', ''))
 
         for battleResult in battleTable.find_all("td", "char"):
             for imgList in battleResult.find_all("img"):
@@ -70,7 +71,8 @@ def getMillDate(name):
             mill = line.replace('\n', '').split(' ')
             findName = True
             break
-        if not line: break
+        if not line:
+            break
     f.close()
 
     if findName:
@@ -81,6 +83,64 @@ def getMillDate(name):
     else:
         return "{0}쿤은 군인이 아닌거 같아요~".format(name)
 
+def weather(search):
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
+    encText = urllib.parse.quote(search + '날씨')
+    url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
+    request = urllib.request.Request(url)
+    request.add_header("X-Naver-Client-Id",client_id)
+    request.add_header("X-Naver-Client-Secret",client_secret)
+    response = urllib.request.urlopen(request)
+    bsObj = BeautifulSoup(response, "html.parser")
+    todayBase = bsObj.find('div', {'class': 'today_area _mainTabContent'})
+
+    temp = bsObj.find('span', {'class': 'btn_select'})
+    local = temp.text.strip()
+
+    temp = todayBase.find('span', {'class': 'todaytemp'})
+    todayTemp = temp.text.strip()
+
+    temp = todayBase.find('p', {'class': 'cast_txt'})
+    todayCast = temp.text.strip()
+
+    temp = todayBase.find('span', {'class': 'merge'})
+    todayMerge = temp.text.strip()
+
+    temp = todayBase.find('span', {'class': 'sensible'})
+    temp2 = temp.find('span', {'class': 'num'})
+    todaySensible = temp2.text.strip()
+
+    temp = todayBase.find('dd', {'class': 'lv2'})
+    todayDust = temp.text.strip()
+
+    tomorrowBase = bsObj.find_all('div', {'class': 'main_info morning_box'})
+
+    temp = tomorrowBase[0].find('span', {'class': 'todaytemp'})
+    tomorrowTemp = temp.text.strip()
+
+    temp = tomorrowBase[0].find('ul', {'class': 'info_list'})
+    temp2 = temp.find('p', {'class': 'cast_txt'})
+    tomorrowWeather = temp2.text.strip()
+
+    temp2 = temp.find('span', {'class': 'lv1'})
+    tomorrowDust = temp2.text.strip()
+
+    temp = tomorrowBase[1].find('span', {'class': 'todaytemp'})
+    tomorrowTemp2 = temp.text.strip()
+
+    temp = tomorrowBase[1].find('ul', {'class': 'info_list'})
+    temp2 = temp.find('p', {'class': 'cast_txt'})
+    tomorrowWeather2 = temp2.text.strip()
+
+    temp2 = temp.find('span', {'class': 'lv1'})
+    tomorrowDust2 = temp2.text.strip()
+
+    weatherTable = [local, todayTemp, todayCast, todayMerge, todaySensible, todayDust]
+    nextWeatherTable = [tomorrowTemp, tomorrowWeather, tomorrowDust, tomorrowTemp2, tomorrowWeather2, tomorrowDust2]
+
+    return weatherTable, nextWeatherTable
+    
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -99,10 +159,15 @@ async def on_message(message):
             colour = discord.Colour.green(),
         )
         embed.set_thumbnail(url=client.user.avatar_url)
-        embed.add_field(name='!망언집', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
-        embed.add_field(name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
-        embed.add_field(name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
-        embed.add_field(name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
+        embed.add_field(
+            name='!망언집', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
+        embed.add_field(
+            name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
+        embed.add_field(
+            name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
+        embed.add_field(
+            name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
+        embed.add_field(name='!날씨', value='날씨 알려줌.')
         embed.add_field(name='!사이퍼즈 (닉네임)', value='전적 알려줌.')
         embed.add_field(name='!사이퍼즈 공식 (닉네임)', value='전적이랑 공식전 최근에 한거 결과 알려줌.')
         embed.add_field(name='!사이퍼즈 일반 (닉네임)', value='전적이랑 일반전 최근에 한거 결과 알려줌.')
@@ -143,7 +208,8 @@ async def on_message(message):
             colour = discord.Colour.red(),
         )
         if len(log) <= 4:
-            embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
+            embed.set_thumbnail(
+                url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
             embed.add_field(name='닉네임', value=log[0])
             embed.add_field(name='급수', value=log[1])
             embed.add_field(name='클랜', value=log[2])
@@ -151,7 +217,8 @@ async def on_message(message):
             await message.channel.send(embed=embed)
         
         else:
-            embed.set_thumbnail(url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
+            embed.set_thumbnail(
+                url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
             embed.add_field(name='닉네임', value=log[0])
             embed.add_field(name='급수', value=log[1])
             embed.add_field(name='클랜', value=log[2])
@@ -181,6 +248,33 @@ async def on_message(message):
             embed.add_field(name='시야확보', value=battleResult[9])
             await message.channel.send(embed=embed)
 
+    if message.content.startswith('!날씨'):
+        mes = message.content.split(" ")
+        today, tomorr = weather(mes[1])
+        embed = discord.Embed(
+                title='**날씨! 오늘! 날씨!**',
+                description=today[0]+'의 오늘 날씨!',
+                colour=discord.Colour.blue()
+            )
+        embed.add_field(name='현재 기온', value=today[1]+'도')
+        embed.add_field(name='상태', value=today[2])
+        embed.add_field(name='최저최고기온', value=today[3])
+        embed.add_field(name='체감온도', value=today[4])
+        embed.add_field(name='미세먼지', value=today[5])
+        await message.channel.send(embed=embed)
+
+        embed = discord.Embed(
+                title='**날씨! 내일! 날씨!**',
+                description=today[0]+'의 내일 날씨!',
+                colour=discord.Colour.blue()
+            )
+        embed.add_field(name='내일 오전', value=tomorr[0]+'도')
+        embed.add_field(name='상태', value=tomorr[1])
+        embed.add_field(name='미세먼지', value=tomorr[2])
+        embed.add_field(name='내일 오후', value=tomorr[3]+'도')
+        embed.add_field(name='상태', value=tomorr[4])
+        embed.add_field(name='미세먼지', value=tomorr[5])
+        await message.channel.send(embed=embed)
 
 makeDiary()
 makeConch()
