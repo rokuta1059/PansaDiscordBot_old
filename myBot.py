@@ -5,6 +5,7 @@ import sys
 import discord
 import asyncio
 import random
+import openpyxl
 from discord.ext import commands
 from bs4 import BeautifulSoup
 import urllib.request
@@ -95,8 +96,9 @@ def weather(search):
     bsObj = BeautifulSoup(response, "html.parser")
     todayBase = bsObj.find('div', {'class': 'today_area _mainTabContent'})
 
-    temp = bsObj.find('span', {'class': 'btn_select'})
-    local = temp.text.strip()
+    temp = bsObj.find('div', {'class': 'select_box'})
+    temp2 = temp.find('em')
+    local = temp2.text.strip()
 
     temp = todayBase.find('span', {'class': 'todaytemp'})
     todayTemp = temp.text.strip()
@@ -111,8 +113,9 @@ def weather(search):
     temp2 = temp.find('span', {'class': 'num'})
     todaySensible = temp2.text.strip()
 
-    temp = todayBase.find('dd', {'class': 'lv2'})
-    todayDust = temp.text.strip()
+    temp = todayBase.find('dl', {'class': 'indicator'})
+    temp2 = temp.find_all('dd')
+    todayDust = temp2[0].text.strip()
 
     tomorrowBase = bsObj.find_all('div', {'class': 'main_info morning_box'})
 
@@ -123,8 +126,8 @@ def weather(search):
     temp2 = temp.find('p', {'class': 'cast_txt'})
     tomorrowWeather = temp2.text.strip()
 
-    temp2 = temp.find('span', {'class': 'lv1'})
-    tomorrowDust = temp2.text.strip()
+    temp2 = temp.find('span', {'class': 'indicator'})
+    tomorrowDust = temp2.text.strip().replace('미세먼지 ', '')
 
     temp = tomorrowBase[1].find('span', {'class': 'todaytemp'})
     tomorrowTemp2 = temp.text.strip()
@@ -133,13 +136,70 @@ def weather(search):
     temp2 = temp.find('p', {'class': 'cast_txt'})
     tomorrowWeather2 = temp2.text.strip()
 
-    temp2 = temp.find('span', {'class': 'lv1'})
-    tomorrowDust2 = temp2.text.strip()
+    temp2 = temp.find('span', {'class': 'indicator'})
+    tomorrowDust2 = temp2.text.strip().replace('미세먼지 ', '')
 
     weatherTable = [local, todayTemp, todayCast, todayMerge, todaySensible, todayDust]
     nextWeatherTable = [tomorrowTemp, tomorrowWeather, tomorrowDust, tomorrowTemp2, tomorrowWeather2, tomorrowDust2]
 
     return weatherTable, nextWeatherTable
+    
+def setXl():
+    file = openpyxl.load_workbook("memoryData.xlsx")
+    memoryData = file.active
+    for i in range(1, 251):
+        memoryData['A' + str(i)].value = '-'
+    file.save("memoryData.xlsx")
+    file.close()
+
+def setMemory(inputData, outputData):
+    returnString = ''
+    file = openpyxl.load_workbook("memoryData.xlsx")
+    memoryData = file.active
+    for i in range(1, 251):
+        if memoryData['A' + str(i)].value == inputData:
+            returnString = '{0}는 이미 {1}로 기억하고 있는걸!'.format(inputData, memoryData['B' + str(i)].value)
+            break
+        elif memoryData['A' + str(i)].value == '-':
+            memoryData['A' + str(i)].value = inputData
+            memoryData['B' + str(i)].value = outputData
+            returnString = '{0}는 {1}! 기억! 각인! 세뇌! 삭제!'.format(inputData, outputData)
+            break
+    file.save('memoryData.xlsx')
+    file.close()
+    return returnString
+
+def deleteMemory(inputData):
+    returnString = ''
+    file = openpyxl.load_workbook("memoryData.xlsx")
+    memoryData = file.active
+    for i in range(1, 251):
+        if memoryData['A' + str(i)].value == inputData:
+            returnString = '{0}...? {1}이었던 거 같은데...으윽 머리가...'.format(memoryData['A' + str(i)].value, memoryData['B' + str(i)].value)
+            memoryData['A' + str(i)].value = '-'
+            break
+        elif memoryData['A' + str(i)].value == '-':
+            returnString = '{0}은 기억한 적이 없는데? 늙어서 가르쳐준지도 기억 못하는구나!'.format(inputData)
+            break
+    file.save('memoryData.xlsx')
+    file.close()
+    return returnString
+
+def setString(input):
+    tmp = [x.strip() for x in input.split('/')]
+    return tmp
+
+def findMemory(inputData):
+    file = openpyxl.load_workbook("memoryData.xlsx")
+    memoryData = file.active
+    for i in range(1, 251):
+        if memoryData['A' + str(i)].value == inputData:
+            tmp = memoryData['B' + str(i)].value
+            file.close()
+            return tmp
+        elif memoryData['A' + str(i)].value == '-':
+            file.close()
+            return '{0}이 뭔데? 난 모르는데!'.format(inputData)
     
 @client.event
 async def on_ready():
@@ -167,10 +227,14 @@ async def on_message(message):
             name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
         embed.add_field(
             name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
-        embed.add_field(name='!날씨', value='날씨 알려줌.')
+        embed.add_field(name='!날씨', value='날씨 알려줌. 지역 같이 입력하면 됨.')
         embed.add_field(name='!사이퍼즈 (닉네임)', value='전적 알려줌.')
         embed.add_field(name='!사이퍼즈 공식 (닉네임)', value='전적이랑 공식전 최근에 한거 결과 알려줌.')
         embed.add_field(name='!사이퍼즈 일반 (닉네임)', value='전적이랑 일반전 최근에 한거 결과 알려줌.')
+        embed.add_field(name='!기억', value='/로 구분해서 기억함. A/B 입력하면 A 에 B가 대응')
+        embed.add_field(name='!삭제', value='기억 삭제함. A 입력하면 A에 대응하는 걸 잊음')
+        embed.add_field(name='!말해 or 요정아', value='기억한거 말함. A 입력하면 대응하는 B 출력')
+        embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
 
@@ -275,6 +339,26 @@ async def on_message(message):
         embed.add_field(name='상태', value=tomorr[4])
         embed.add_field(name='미세먼지', value=tomorr[5])
         await message.channel.send(embed=embed)
+        
+    if message.content.startswith('!기억'):
+        mes = message.content.replace('!기억', '')
+        mesTemp = setString(mes)
+        result = setMemory(mesTemp[0], mesTemp[1])
+        await message.channel.send(result)
+    
+    if message.content.startswith('!삭제'):
+        mes = message.content.replace('!삭제', '').strip()
+        result = deleteMemory(mes)
+        await message.channel.send(result)
+    
+    if message.content.startswith('!말해') or message.content.startswith('!요정') or message.content.startswith('요정아'):
+        mes = message.content.replace('!말해', '').replace('요정아', '').strip()
+        result = findMemory(mes)
+        await message.channel.send(result)
+    
+    if message.content.startswith('!모두모여'):
+        mes = message.content.replace('!모두모여', '').strip()
+        await message.channel.send('@everyone ' + mes)
 
 makeDiary()
 makeConch()
