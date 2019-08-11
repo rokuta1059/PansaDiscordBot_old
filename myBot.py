@@ -147,24 +147,36 @@ def weather(search):
 def setXl():
     file = openpyxl.load_workbook("memoryData.xlsx")
     memoryData = file.active
-    for i in range(1, 251):
+    for i in range(1, 501):
         memoryData['A' + str(i)].value = '-'
     file.save("memoryData.xlsx")
     file.close()
 
 def setMemory(inputData, outputData):
     returnString = ''
+    emptyNum = 0
     file = openpyxl.load_workbook("memoryData.xlsx")
     memoryData = file.active
-    for i in range(1, 251):
+    for i in range(1, 501):
         if memoryData['A' + str(i)].value == inputData:
             returnString = '{0}는 이미 {1}로 기억하고 있는걸!'.format(inputData, memoryData['B' + str(i)].value)
             break
         elif memoryData['A' + str(i)].value == '-':
-            memoryData['A' + str(i)].value = inputData
-            memoryData['B' + str(i)].value = outputData
-            returnString = '{0}는 {1}! 기억! 각인! 세뇌! 삭제!'.format(inputData, outputData)
-            break
+            if memoryData['B' + str(i)].value == None:
+                if emptyNum != 0:
+                    memoryData['A' + str(emptyNum)].value = inputData
+                    memoryData['B' + str(emptyNum)].value = outputData
+                    returnString = '{0}는 {1}! 기억! 각인! 세뇌! 삭제!'.format(inputData, outputData)
+                    break
+                else:
+                    memoryData['A' + str(i)].value = inputData
+                    memoryData['B' + str(i)].value = outputData
+                    returnString = '{0}는 {1}! 기억! 각인! 세뇌! 삭제!'.format(inputData, outputData)
+                    break
+            else :
+                if emptyNum == 0:
+                    emptyNum == i
+
     file.save('memoryData.xlsx')
     file.close()
     return returnString
@@ -178,7 +190,7 @@ def deleteMemory(inputData):
             returnString = '{0}...? {1}이었던 거 같은데...으윽 머리가...'.format(memoryData['A' + str(i)].value, memoryData['B' + str(i)].value)
             memoryData['A' + str(i)].value = '-'
             break
-        elif memoryData['A' + str(i)].value == '-':
+        elif memoryData['A' + str(i)].value == '-' and memoryData['B' + str(i)].value == None:
             returnString = '{0}은 기억한 적이 없는데? 늙어서 가르쳐준지도 기억 못하는구나!'.format(inputData)
             break
     file.save('memoryData.xlsx')
@@ -197,7 +209,7 @@ def findMemory(inputData):
             tmp = memoryData['B' + str(i)].value
             file.close()
             return tmp
-        elif memoryData['A' + str(i)].value == '-':
+        elif memoryData['A' + str(i)].value == '-' and memoryData['B' + str(i)].value == None:
             file.close()
             return '{0}이 뭔데? 난 모르는데!'.format(inputData)
     
