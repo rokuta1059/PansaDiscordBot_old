@@ -175,7 +175,7 @@ def setMemory(inputData, outputData):
                     break
             else :
                 if emptyNum == 0:
-                    emptyNum == i
+                    emptyNum = i
 
     file.save('memoryData.xlsx')
     file.close()
