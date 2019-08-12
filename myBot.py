@@ -6,6 +6,7 @@ import discord
 import asyncio
 import random
 import openpyxl
+import json
 from discord.ext import commands
 from bs4 import BeautifulSoup
 import urllib.request
@@ -14,6 +15,7 @@ from datetime import datetime, date, time
 client = discord.Client()
 absurb = []
 conch = []
+hello = ['왜?', '무슨일?', '하이!', '응!', '짜잔!', '왜 불렀어?', '꺄!', '어엉?', '칫', '뭐']
 
 def makeDiary():
     f = open('diaryData.txt', 'r', encoding="utf8")
@@ -84,10 +86,10 @@ def getMillDate(name):
     else:
         return "{0}쿤은 군인이 아닌거 같아요~".format(name)
 
-def weather(search):
+def todayWeather(search):
     client_id = 'NAVER_CLIENT_ID'
     client_secret = 'NAVER_CLIENT_SECRET'
-    encText = urllib.parse.quote(search + '날씨')
+    encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
     request.add_header("X-Naver-Client-Id",client_id)
@@ -117,6 +119,25 @@ def weather(search):
     temp2 = temp.find_all('dd')
     todayDust = temp2[0].text.strip()
 
+    weatherTable = [local, todayTemp, todayCast, todayMerge, todaySensible, todayDust]
+
+    return weatherTable
+
+def tomorrowWeather(search):
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
+    encText = urllib.parse.quote(search + ' 날씨')
+    url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
+    request = urllib.request.Request(url)
+    request.add_header("X-Naver-Client-Id",client_id)
+    request.add_header("X-Naver-Client-Secret",client_secret)
+    response = urllib.request.urlopen(request)
+    bsObj = BeautifulSoup(response, "html.parser")
+
+    temp = bsObj.find('div', {'class': 'select_box'})
+    temp2 = temp.find('em')
+    local = temp2.text.strip()
+
     tomorrowBase = bsObj.find_all('div', {'class': 'main_info morning_box'})
 
     temp = tomorrowBase[0].find('span', {'class': 'todaytemp'})
@@ -139,10 +160,9 @@ def weather(search):
     temp2 = temp.find('span', {'class': 'indicator'})
     tomorrowDust2 = temp2.text.strip().replace('미세먼지 ', '')
 
-    weatherTable = [local, todayTemp, todayCast, todayMerge, todaySensible, todayDust]
-    nextWeatherTable = [tomorrowTemp, tomorrowWeather, tomorrowDust, tomorrowTemp2, tomorrowWeather2, tomorrowDust2]
+    nextWeatherTable = [local, tomorrowTemp, tomorrowWeather, tomorrowDust, tomorrowTemp2, tomorrowWeather2, tomorrowDust2]
 
-    return weatherTable, nextWeatherTable
+    return nextWeatherTable
     
 def setXl():
     file = openpyxl.load_workbook("memoryData.xlsx")
@@ -159,7 +179,7 @@ def setMemory(inputData, outputData):
     memoryData = file.active
     for i in range(1, 501):
         if memoryData['A' + str(i)].value == inputData:
-            returnString = '{0}는 이미 {1}로 기억하고 있는걸!'.format(inputData, memoryData['B' + str(i)].value)
+            returnString = '{0}는 이미 기억하고 있는걸!'.format(inputData, memoryData['B' + str(i)].value)
             break
         elif memoryData['A' + str(i)].value == '-':
             if memoryData['B' + str(i)].value == None:
@@ -212,7 +232,24 @@ def findMemory(inputData):
         elif memoryData['A' + str(i)].value == '-' and memoryData['B' + str(i)].value == None:
             file.close()
             return '{0}이 뭔데? 난 모르는데!'.format(inputData)
-    
+  
+def translate(source, target, text):
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
+    encText = urllib.parse.quote(text)
+    data = "source={0}&target={1}&text={2}".format(source, target, encText)
+    url = "https://openapi.naver.com/v1/papago/n2mt"
+    request = urllib.request.Request(url)
+    request.add_header("X-Naver-Client-Id",client_id)
+    request.add_header("X-Naver-Client-Secret",client_secret)
+    response = urllib.request.urlopen(request, data=data.encode("utf-8"))
+    rescode = response.getcode()
+    if(rescode==200):
+        response_body = json.loads(response.read())
+        return response_body['message']['result']['translatedText']
+    else:
+        return "Error Code:" + rescode
+
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -239,13 +276,15 @@ async def on_message(message):
             name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
         embed.add_field(
             name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
-        embed.add_field(name='!날씨', value='날씨 알려줌. 지역 같이 입력하면 됨.')
+        embed.add_field(name='!오늘날씨', value='오늘날씨 알려줌. 지역 같이 입력하면 됨.')
+        embed.add_field(name='!내일날씨', value='내일날씨 알려줌. 지역 같이 입력하면 됨.')
         embed.add_field(name='!사이퍼즈 (닉네임)', value='전적 알려줌.')
         embed.add_field(name='!사이퍼즈 공식 (닉네임)', value='전적이랑 공식전 최근에 한거 결과 알려줌.')
         embed.add_field(name='!사이퍼즈 일반 (닉네임)', value='전적이랑 일반전 최근에 한거 결과 알려줌.')
         embed.add_field(name='!기억', value='/로 구분해서 기억함. A/B 입력하면 A 에 B가 대응')
         embed.add_field(name='!삭제', value='기억 삭제함. A 입력하면 A에 대응하는 걸 잊음')
         embed.add_field(name='!말해 or 요정아', value='기억한거 말함. A 입력하면 대응하는 B 출력')
+        embed.add_field(name='!한영, !영한, !한일, !일한', value='번역함. 네이버 파파고 제공')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
@@ -324,9 +363,9 @@ async def on_message(message):
             embed.add_field(name='시야확보', value=battleResult[9])
             await message.channel.send(embed=embed)
 
-    if message.content.startswith('!날씨'):
-        mes = message.content.split(" ")
-        today, tomorr = weather(mes[1])
+    if message.content.startswith('!오늘날씨'):
+        mes = message.content.replace('!오늘날씨', '').strip()
+        today = todayWeather(mes)
         embed = discord.Embed(
                 title='**날씨! 오늘! 날씨!**',
                 description=today[0]+'의 오늘 날씨!',
@@ -337,36 +376,96 @@ async def on_message(message):
         embed.add_field(name='최저최고기온', value=today[3])
         embed.add_field(name='체감온도', value=today[4])
         embed.add_field(name='미세먼지', value=today[5])
+        embed.set_footer(text='네이버 날씨 제공')
         await message.channel.send(embed=embed)
 
+    if message.content.startswith('!내일날씨'):
+        mes = message.content.replace('!내일날씨', '').strip()
+        tomorr = tomorrowWeather(mes)
         embed = discord.Embed(
                 title='**날씨! 내일! 날씨!**',
-                description=today[0]+'의 내일 날씨!',
+                description=tomorr[0]+'의 내일 날씨!',
                 colour=discord.Colour.blue()
             )
-        embed.add_field(name='내일 오전', value=tomorr[0]+'도')
-        embed.add_field(name='상태', value=tomorr[1])
-        embed.add_field(name='미세먼지', value=tomorr[2])
-        embed.add_field(name='내일 오후', value=tomorr[3]+'도')
-        embed.add_field(name='상태', value=tomorr[4])
-        embed.add_field(name='미세먼지', value=tomorr[5])
+        embed.add_field(name='내일 오전', value=tomorr[1]+'도')
+        embed.add_field(name='상태', value=tomorr[2])
+        embed.add_field(name='미세먼지', value=tomorr[3])
+        embed.add_field(name='내일 오후', value=tomorr[4]+'도')
+        embed.add_field(name='상태', value=tomorr[5])
+        embed.add_field(name='미세먼지', value=tomorr[6])
+        embed.set_footer(text='네이버 날씨 제공')
         await message.channel.send(embed=embed)
         
     if message.content.startswith('!기억'):
         mes = message.content.replace('!기억', '')
         mesTemp = setString(mes)
-        result = setMemory(mesTemp[0], mesTemp[1])
-        await message.channel.send(result)
+        if mesTemp[0] == '' or mesTemp[1] == '':
+            await message.channel.send('기억할 문장이 이상한 거 같은데...제대로 가르쳐줘!')
+        else:
+            result = setMemory(mesTemp[0], mesTemp[1])
+            await message.channel.send(result)
     
     if message.content.startswith('!삭제'):
         mes = message.content.replace('!삭제', '').strip()
         result = deleteMemory(mes)
         await message.channel.send(result)
     
-    if message.content.startswith('!말해') or message.content.startswith('!요정') or message.content.startswith('요정아'):
-        mes = message.content.replace('!말해', '').replace('요정아', '').strip()
+    if message.content.startswith('!말해') or message.content.startswith('!요정'):
+        mes = message.content.replace('!말해', '').replace('!요정','').strip()
         result = findMemory(mes)
         await message.channel.send(result)
+        
+    if message.content.startswith('요정아'):
+        mes = message.content.replace('요정아', '').strip()
+        if mes == '':
+            await message.channel.send(random.choice(hello))
+        else :
+            result = findMemory(mes)
+            await message.channel.send(result)
+            
+    if message.content.startswith('!한일'):
+        mes = message.content.replace('!한일', '').strip()
+        transText = translate('ko', 'ja', mes)
+        embed = discord.Embed(
+            title=transText,
+            description=mes,
+            colour=discord.Colour.purple()
+        )
+        embed.set_footer(text='Translated by.네이버 파파고')
+        await message.channel.send(embed=embed)
+    
+    if message.content.startswith('!일한'):
+        mes = message.content.replace('!일한', '').strip()
+        transText = translate('ja', 'ko', mes)
+        embed = discord.Embed(
+            title=transText,
+            description=mes,
+            colour=discord.Colour.purple()
+        )   
+        embed.set_footer(text='Translated by.네이버 파파고')
+        await message.channel.send(embed=embed)
+
+    if message.content.startswith('!한영'):
+        mes = message.content.replace('!한영', '').strip()
+        transText = translate('ko', 'en', mes)
+        embed = discord.Embed(
+            title=transText,
+            description=mes,
+            colour=discord.Colour.purple()
+        )   
+        embed.set_footer(text='Translated by.네이버 파파고')
+        await message.channel.send(embed=embed)
+
+    if message.content.startswith('!영한'):
+        mes = message.content.replace('!영한', '').strip()
+        transText = translate('en', 'ko', mes)
+        embed = discord.Embed(
+            title=transText,
+            description=mes,
+            colour=discord.Colour.purple()
+        )   
+        embed.set_footer(text='Translated by.네이버 파파고')
+        await message.channel.send(embed=embed)
     
     if message.content.startswith('!모두모여'):
         mes = message.content.replace('!모두모여', '').strip()
