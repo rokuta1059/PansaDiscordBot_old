@@ -233,6 +233,18 @@ def findMemory(inputData):
             file.close()
             return '{0}이 뭔데? 난 모르는데!'.format(inputData)
   
+def printMemory():
+    file = openpyxl.load_workbook("memoryData.xlsx")
+    memoryData = file.active
+    memoryList = []
+    for i in range(1, 501):
+        if memoryData['A' + str(i)].value != '-' and memoryData['B' + str(i)].value != None:
+            memoryList.append('{0} -> {1}'.format(memoryData['A' + str(i)].value, memoryData['B' + str(i)].value))
+        elif memoryData['A' + str(i)].value == '-' and memoryData['B' + str(i)].value == None:
+            break
+    file.close()
+    return memoryList
+
 def translate(source, target, text):
     client_id = 'NAVER_CLIENT_ID'
     client_secret = 'NAVER_CLIENT_SECRET'
@@ -284,6 +296,7 @@ async def on_message(message):
         embed.add_field(name='!기억', value='/로 구분해서 기억함. A/B 입력하면 A 에 B가 대응')
         embed.add_field(name='!삭제', value='기억 삭제함. A 입력하면 A에 대응하는 걸 잊음')
         embed.add_field(name='!말해 or 요정아', value='기억한거 말함. A 입력하면 대응하는 B 출력')
+        embed.add_field(name='!리스트', value='기억 리스트 나옴. A->B')
         embed.add_field(name='!한영, !영한, !한일, !일한', value='번역함. 네이버 파파고 제공')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
@@ -422,7 +435,16 @@ async def on_message(message):
         else :
             result = findMemory(mes)
             await message.channel.send(result)
-            
+         
+    if message.content.startswith('!리스트'):
+        memoryDataList = printMemory()
+        printListStr = "```"
+        for i in memoryDataList:
+            printListStr = printListStr + i + '\n'
+        printListStr = printListStr + "```"
+        await message.channel.send('내 머리속을 보고 싶어하다니...변태...')
+        await message.channel.send(printListStr)
+        
     if message.content.startswith('!한일'):
         mes = message.content.replace('!한일', '').strip()
         transText = translate('ko', 'ja', mes)
