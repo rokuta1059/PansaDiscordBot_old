@@ -13,16 +13,8 @@ import urllib.request
 from datetime import datetime, date, time
 
 client = discord.Client()
-absurb = []
 conch = []
 hello = ['왜?', '무슨일?', '하이!', '응!', '짜잔!', '왜 불렀어?', '꺄!', '어엉?', '칫', '뭐']
-
-def makeDiary():
-    f = open('diaryData.txt', 'r', encoding="utf8")
-    readlist = f.read()
-    f.close()
-    global absurb
-    absurb = readlist.split('$$')
     
 def makeConch():
     f = open('magicConch.txt', 'r', encoding="utf8")
@@ -30,6 +22,14 @@ def makeConch():
     f.close()
     global conch
     conch = readlist.split('\n')
+    
+def absurbDiary(inputInt):
+    jsonFile = open('diary.json', encoding='utf8').read()
+    data = json.loads(jsonFile)
+    if inputInt == 0:
+        return data[str(random.randint(1, len(data)))]
+    else:
+        return data[str(inputInt)]
 
 def cypersRank(nickname):
     parseNick = urllib.parse.quote(nickname)
@@ -262,6 +262,14 @@ def translate(source, target, text):
     else:
         return "Error Code:" + rescode
 
+def makeTaki():
+    file = openpyxl.load_workbook("takiTaki.xlsx", data_only=True)
+    takiData = file.active
+    tmp = random.randint(1, takiData['B1'].value)
+    taki = takiData['A' + str(tmp)].value
+    file.close()
+    return taki
+    
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -281,9 +289,10 @@ async def on_message(message):
         )
         embed.set_thumbnail(url=client.user.avatar_url)
         embed.add_field(
-            name='!망언집', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
+            name='!망언, !망언집, !diary', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
         embed.add_field(
             name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
+        embed.add_field(name='!타키, !taki', value='오늘의 타키쿤은?')
         embed.add_field(
             name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
         embed.add_field(
@@ -302,12 +311,21 @@ async def on_message(message):
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
 
-    if message.content.startswith('!망언집'):
+    if message.content.startswith('!망언') or message.content.startswith('!망언집') or message.content.startswith('!diary'):
         mes = message.content.split(" ")
         if len(mes) == 2:
-            await message.channel.send(absurb[int(mes[1])-1])
+            absurb = absurbDiary(int(mes[1]))
         else:
-            await message.channel.send(random.choice(absurb))
+            absurb = absurbDiary(0)
+        embed = discord.Embed(
+            title=absurb['absurb'],
+            description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
+            colour=random.randint(0, 0xffffff)
+        )
+        await message.channel.send(embed=embed)
+        
+    if message.content.startswith('!타키') or message.content.startswith('!taki'):
+        await message.channel.send(makeTaki())
             
     if message.content.startswith('!선택'):
         mes = message.content.split(" ")
@@ -493,6 +511,5 @@ async def on_message(message):
         mes = message.content.replace('!모두모여', '').strip()
         await message.channel.send('@everyone ' + mes)
 
-makeDiary()
 makeConch()
 client.run('TOKEN')
