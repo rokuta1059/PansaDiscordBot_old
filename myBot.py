@@ -270,6 +270,33 @@ def makeTaki():
     file.close()
     return taki
     
+def makeDietTable(dormitory, weekday):
+    foodtable = []
+
+    if dormitory == '재정':
+        parseDormitory = 'foodtab1'
+    elif dormitory == '새롬':
+        parseDormitory = 'foodtab2'
+    elif dormitory == '이룸':
+        parseDormitory = 'foodtab3'
+
+    kangwonURL = 'http://knudorm.kangwon.ac.kr/home/sub02/sub02_05_bj.jsp'
+    with urllib.request.urlopen(kangwonURL) as response:
+        html = response.read()
+        soup = BeautifulSoup(html, 'html.parser')
+
+    dietTable = soup.find('div', {'id': parseDormitory})
+    diet1 = dietTable.find_all('table', {'class': 'table_type01'})
+    diet2 = diet1[1].find_all('td')
+
+    foodtable.append(diet2[weekday * 3].get_text().replace('\r', '').replace('\t', '').strip())
+    foodtable.append(diet2[weekday * 3 + 1].get_text().replace('\r', '').replace('\t', '').strip())
+    foodtable.append(diet2[weekday * 3 + 2].get_text().replace('\r', '').replace('\t', '').strip())
+
+    newFoodTable = ['없음' if x == '' else x for x in foodtable]
+
+    return newFoodTable
+
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -307,6 +334,7 @@ async def on_message(message):
         embed.add_field(name='!말해 or 요정아', value='기억한거 말함. A 입력하면 대응하는 B 출력')
         embed.add_field(name='!리스트', value='기억 리스트 나옴. A->B')
         embed.add_field(name='!한영, !영한, !한일, !일한', value='번역함. 네이버 파파고 제공')
+        embed.add_field(name='!재정, !새롬, !이룸', value='오늘 밥 뭔지 알려줌.')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
@@ -318,7 +346,7 @@ async def on_message(message):
         else:
             absurb = absurbDiary(0)
         embed = discord.Embed(
-            title=absurb['absurb'],
+            title='{0}. {1}'.format(absurb['number'], absurb['absurb']),
             description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
             colour=random.randint(0, 0xffffff)
         )
@@ -507,6 +535,18 @@ async def on_message(message):
         embed.set_footer(text='Translated by.네이버 파파고')
         await message.channel.send(embed=embed)
     
+    if message.content.startswith('!재정') or message.content.startswith('!새롬') or message.content.startswith('!이룸'):
+        dietTable = makeDietTable(message.content.replace('!', '').strip(), datetime.today().weekday())
+        embed = discord.Embed(
+            title = '식 단 표',
+            description = '{0}의 오늘의 식단표'.format(message.content.replace('!', '').strip()),
+            colour=discord.Colour.blue()
+        )
+        embed.add_field(name='아침', value = dietTable[0])
+        embed.add_field(name='점심', value = dietTable[1])
+        embed.add_field(name='저녁', value = dietTable[2])
+        await message.channel.send(embed=embed)
+        
     if message.content.startswith('!모두모여'):
         mes = message.content.replace('!모두모여', '').strip()
         await message.channel.send('@everyone ' + mes)
