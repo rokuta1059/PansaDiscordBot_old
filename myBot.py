@@ -31,6 +31,24 @@ def absurbDiary(inputInt):
     else:
         return data[str(inputInt)]
 
+def absurbFindName(name):
+    findName = []
+    jsonFile = open('diary.json', encoding='utf8').read()
+    data = json.loads(jsonFile)
+    for i in range(1, len(data) + 1):
+        if name in data[str(i)]['name']:
+            findName.append(data[str(i)]['number'])
+    return findName
+
+def absurbFindAbsurb(search):
+    findAb = []
+    jsonFile = open('diary.json', encoding='utf8').read()
+    data = json.loads(jsonFile)
+    for i in range(1, len(data) + 1):
+        if search in data[str(i)]['absurb']:
+            findAb.append(data[str(i)]['number'])
+    return findAb
+    
 def cypersRank(nickname):
     parseNick = urllib.parse.quote(nickname)
     if game == "공식":
@@ -315,16 +333,13 @@ async def on_message(message):
             colour = discord.Colour.green(),
         )
         embed.set_thumbnail(url=client.user.avatar_url)
-        embed.add_field(
-            name='!망언, !망언집, !diary', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
-        embed.add_field(
-            name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
+        embed.add_field(name='!망언, !diary', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
+        embed.add_field(name='!망언검색 (이름/내용) (검색어)', value='망언 검색해줌. 몇번인지 나옴.')
+        embed.add_field(name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
         embed.add_field(name='!타키, !taki', value='오늘의 타키쿤은?')
-        embed.add_field(
-            name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
-        embed.add_field(
-            name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
-        embed.add_field(name='!오늘날씨', value='오늘날씨 알려줌. 지역 같이 입력하면 됨.')
+        embed.add_field(name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
+        embed.add_field(name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
+        embed.add_field(name='!날씨, !오늘날씨', value='오늘날씨 알려줌. 지역 같이 입력하면 됨.')
         embed.add_field(name='!내일날씨', value='내일날씨 알려줌. 지역 같이 입력하면 됨.')
         embed.add_field(name='!사이퍼즈 (닉네임)', value='전적 알려줌.')
         embed.add_field(name='!사이퍼즈 공식 (닉네임)', value='전적이랑 공식전 최근에 한거 결과 알려줌.')
@@ -339,18 +354,43 @@ async def on_message(message):
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
 
-    if message.content.startswith('!망언') or message.content.startswith('!망언집') or message.content.startswith('!diary'):
-        mes = message.content.split(" ")
-        if len(mes) == 2:
-            absurb = absurbDiary(int(mes[1]))
+    if message.content.startswith('!망언') or message.content.startswith('!diary'):
+        if message.content.startswith('!망언검색'):
+            mes = message.content.split(" ")
+            if mes[1] in '이름':
+                numList = absurbFindName(mes[2])
+                numStr = ''
+                for i in numList:
+                    numStr = numStr + str(i) + ' '
+                embed = discord.Embed(
+                    title='{0}이(가) 이름에 포함된 망언은...'.format(mes[2]),
+                    description=numStr,
+                    colour=random.randint(0, 0xffffff)
+                )
+                await message.channel.send(embed=embed)
+            elif mes[1] in '내용':
+                numList = absurbFindAbsurb(mes[2])
+                numStr = ''
+                for i in numList:
+                    numStr = numStr + str(i) + ' '
+                embed = discord.Embed(
+                    title='{0}이(가) 내용에 포함된 망언은...'.format(mes[2]),
+                    description=numStr,
+                    colour=random.randint(0, 0xffffff)
+                )
+                await message.channel.send(embed=embed)
         else:
-            absurb = absurbDiary(0)
-        embed = discord.Embed(
-            title='{0}. {1}'.format(absurb['number'], absurb['absurb']),
-            description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
-            colour=random.randint(0, 0xffffff)
-        )
-        await message.channel.send(embed=embed)
+            mes = message.content.split(" ")
+            if len(mes) == 2:
+                absurb = absurbDiary(int(mes[1]))
+            else:
+                absurb = absurbDiary(0)
+            embed = discord.Embed(
+                title='{0}. {1}'.format(absurb['number'], absurb['absurb']),
+                description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
+                colour=random.randint(0, 0xffffff)
+            )
+            await message.channel.send(embed=embed)
         
     if message.content.startswith('!타키') or message.content.startswith('!taki'):
         await message.channel.send(makeTaki())
@@ -422,8 +462,8 @@ async def on_message(message):
             embed.add_field(name='시야확보', value=battleResult[9])
             await message.channel.send(embed=embed)
 
-    if message.content.startswith('!오늘날씨'):
-        mes = message.content.replace('!오늘날씨', '').strip()
+    if message.content.startswith('!오늘날씨') or message.content.startswith('!날씨'):
+        mes = message.content.replace('!오늘날씨', '').replace('!날씨').strip()
         today = todayWeather(mes)
         embed = discord.Embed(
                 title='**날씨! 오늘! 날씨!**',
