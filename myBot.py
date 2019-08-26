@@ -49,6 +49,28 @@ def absurbFindAbsurb(search):
             findAb.append(data[str(i)]['number'])
     return findAb
     
+def addAbsurb(absurb, name, descript):
+    jsonFile = open('diary.json', encoding='UTF8').read()
+    data = json.loads(jsonFile)
+    tmp = {'absurb':absurb, 'name':name, 'description':descript, 'number':len(data)+1}
+    data[str(len(data)+1)] = tmp
+
+    with open('diary.json', 'w', encoding='UTF8') as saveFile:
+        json.dump(data, saveFile, indent='\t', ensure_ascii=False)
+
+    return tmp
+
+def changeAbsurb(absurb, name, descript, num):
+    jsonFile = open('diary.json', encoding='UTF8').read()
+    data = json.loads(jsonFile)
+    tmp = {'absurb':absurb, 'name':name, 'description':descript, 'number':num}
+    data[str(num)] = tmp
+
+    with open('diary.json', 'w', encoding='UTF8') as saveFile:
+        json.dump(data, saveFile, indent='\t', ensure_ascii=False)
+
+    return tmp
+
 def cypersRank(nickname):
     parseNick = urllib.parse.quote(nickname)
     if game == "공식":
@@ -315,6 +337,31 @@ def makeDietTable(dormitory, weekday):
 
     return newFoodTable
 
+def makeFortune(name):
+    fortuneInt = random.randint(1, 105)
+    if fortuneInt > 100:
+        return '{0}의 오늘의 행운 지수는 잘 모르겠고 그냥 빛의 가호를 드립니다 ***빛이여!***'.format(name)
+    elif fortuneInt > 90:
+        return '{0}의 오늘의 행운 지수는 {1}! 복권 하나정도는 사도 될 것 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 80:
+        return '{0}의 오늘의 행운 지수는 {1}! 오늘 가챠 연차 대박 각인 날'.format(name, fortuneInt)
+    elif fortuneInt > 70:
+        return '{0}의 오늘의 행운 지수는 {1}! 길가다가 돈 오백원 정도는 주울 수 있을 거 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 60:
+        return '{0}의 오늘의 행운 지수는 {1}! 오늘따라 좋은 템 파밍이 될 거 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 50:
+        return '{0}의 오늘의 행운 지수는 {1}! 밖에 나가면 기분이 좋아질 거 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 40:
+        return '{0}의 오늘의 행운 지수는 {1}! 좋은것도 아니고 안좋은거도 아닌 그런 평범함으로 채워진거 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 30:
+        return '{0}의 오늘의 행운 지수는 {1}! 던전 파밍 해서 허탕만 칠 거 같은 날'.format(name, fortuneInt)
+    elif fortuneInt > 20:
+        return '{0}의 오늘의 행운 지수는 {1}! 길가다 나한테 D0를 준 교수님 만날 수 있을 거 같은 그런 날'.format(name, fortuneInt)
+    elif fortuneInt > 10:
+        return '{0}의 오늘의 행운 지수는 {1}! 이어폰 고무 캡 한쪽만 잃어버리지 않게 조심해야 할 거 같은 그런 날'.format(name, fortuneInt)
+    else:
+        return '{0}의 오늘의 행운 지수는 {1}! 오늘 분명히 뭘 해도 안풀릴거니깐 각오하는게 좋은 날'.format(name, fortuneInt)
+
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -337,7 +384,7 @@ async def on_message(message):
         embed.add_field(name='!망언검색 (이름/내용) (검색어)', value='망언 검색해줌. 몇번인지 나옴.')
         embed.add_field(name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
         embed.add_field(name='!타키, !taki', value='오늘의 타키쿤은?')
-        embed.add_field(name='!소라고둥', value='소라고둥님 마법의소라고둥님 마법의 소라고둥님 다 됨. 위대하신 소라고둥님의 말을 들을 수 있다.')
+        embed.add_field(name='!소라고둥, 소라고둥님, 마법의소라고둥님, 마법의 소라고둥님', value='위대하신 소라고둥님의 말을 들을 수 있다.')
         embed.add_field(name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
         embed.add_field(name='!날씨, !오늘날씨', value='오늘날씨 알려줌. 지역 같이 입력하면 됨.')
         embed.add_field(name='!내일날씨', value='내일날씨 알려줌. 지역 같이 입력하면 됨.')
@@ -350,6 +397,7 @@ async def on_message(message):
         embed.add_field(name='!리스트', value='기억 리스트 나옴. A->B')
         embed.add_field(name='!한영, !영한, !한일, !일한', value='번역함. 네이버 파파고 제공')
         embed.add_field(name='!재정, !새롬, !이룸', value='오늘 밥 뭔지 알려줌.')
+        embed.add_field(name='!운세, !fortune', value='아주 간단한 오늘의 운세')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
@@ -379,6 +427,24 @@ async def on_message(message):
                     colour=random.randint(0, 0xffffff)
                 )
                 await message.channel.send(embed=embed)
+        elif message.content.startswith('!망언추가'):
+            mes = message.content.replace('!망언추가', '').strip().split('/')
+            absurb = addAbsurb(mes[0], mes[1], mes[2])
+            embed = discord.Embed(
+                title='{0}. {1}'.format(absurb['number'], absurb['absurb']),
+                description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
+                colour=random.randint(0, 0xffffff)
+            )
+            await message.channel.send(embed=embed)
+        elif message.content.startswith('!망언수정'):
+            mes = message.content.replace('!망언수정', '').strip().split('/')
+            absurb = changeAbsurb(mes[1], mes[2], mes[3], int(mes[0]))
+            embed = discord.Embed(
+                title='{0}. {1}'.format(absurb['number'], absurb['absurb']),
+                description='- ***{0}***, *{1}*'.format(absurb['name'], absurb['description']),
+                colour=random.randint(0, 0xffffff)
+            )
+            await message.channel.send(embed=embed)
         else:
             mes = message.content.split(" ")
             if len(mes) == 2:
@@ -590,6 +656,9 @@ async def on_message(message):
     if message.content.startswith('!모두모여'):
         mes = message.content.replace('!모두모여', '').strip()
         await message.channel.send('@everyone ' + mes)
+        
+    if message.content.startswith('!운세') or message.content.startswith('!fortune'):
+        await message.channel.send(makeFortune(message.author.display_name))
 
 makeConch()
 client.run('TOKEN')
