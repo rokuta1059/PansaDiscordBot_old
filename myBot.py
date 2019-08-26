@@ -398,6 +398,7 @@ async def on_message(message):
         embed.add_field(name='!한영, !영한, !한일, !일한', value='번역함. 네이버 파파고 제공')
         embed.add_field(name='!재정, !새롬, !이룸', value='오늘 밥 뭔지 알려줌.')
         embed.add_field(name='!운세, !fortune', value='아주 간단한 오늘의 운세')
+        embed.add_field(name='!요정수치, !fairy', value='그때그때 요정수치')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
@@ -575,8 +576,8 @@ async def on_message(message):
         result = deleteMemory(mes)
         await message.channel.send(result)
     
-    if message.content.startswith('!말해') or message.content.startswith('!요정'):
-        mes = message.content.replace('!말해', '').replace('!요정','').strip()
+    if message.content.startswith('!말해'):
+        mes = message.content.replace('!말해', '').strip()
         result = findMemory(mes)
         await message.channel.send(result)
         
@@ -659,6 +660,9 @@ async def on_message(message):
         
     if message.content.startswith('!운세') or message.content.startswith('!fortune'):
         await message.channel.send(makeFortune(message.author.display_name))
+        
+    if message.content.startswith('!fairy') or message.content.startswith('!요정수치'):
+        await message.channel.send('{0}의 동방 요정수치는 무려 >>>{1}<<<씩이나 된다구?'.format(message.author.display_name, random.randint(1, 9999)))
 
 makeConch()
 client.run('TOKEN')
