@@ -362,6 +362,9 @@ def makeFortune(name):
     else:
         return '{0}의 오늘의 행운 지수는 {1}! 오늘 분명히 뭘 해도 안풀릴거니깐 각오하는게 좋은 날'.format(name, fortuneInt)
 
+def dice(count, value):
+    return list(map(lambda x: random.randint(1, value), range(count)))    
+    
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -399,6 +402,7 @@ async def on_message(message):
         embed.add_field(name='!재정, !새롬, !이룸', value='오늘 밥 뭔지 알려줌.')
         embed.add_field(name='!운세, !fortune', value='아주 간단한 오늘의 운세')
         embed.add_field(name='!요정수치, !fairy', value='그때그때 요정수치')
+        embed.add_field(name='!주사위, !dice, ㅈㅅㅇ (굴릴 횟수)D(몇면체) + ...', value='주사위 굴림. 총합도 알려줌.')
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
@@ -664,5 +668,22 @@ async def on_message(message):
     if message.content.startswith('!fairy') or message.content.startswith('!요정수치'):
         await message.channel.send('{0}의 동방 요정수치는 무려 >>>{1}<<<씩이나 된다구?'.format(message.author.display_name, random.randint(1, 9999)))
 
+    if message.content.startswith('!dice') or message.content.startswith('!주사위') or message.content.startswith("ㅈㅅㅇ"):
+        mes = message.content.replace("!dice", "").replace("!주사위", "").replace("ㅈㅅㅇ", "").strip().upper().split(' + ')
+        result = 0
+        embed = discord.Embed(
+            title = '주사위 결과',
+            description = '입력한 주사위의 결과와 합입니다',
+            color = random.randint(0, 0xffffff)
+        )
+        for i in mes:
+            tmpDice = i.split('D')
+            diceResult = dice(int(tmpDice[0]), int(tmpDice[1]))
+            embed.add_field(name='{0}주사위'.format(i), value=diceResult)
+            embed.add_field(name='{0}주사위의 합'.format(i), value=sum(diceResult))
+            result = result + sum(diceResult)
+        embed.add_field(name='주사위 총 합', value='{}'.format(result))
+        await message.channel.send(embed=embed)
+        
 makeConch()
 client.run('TOKEN')
