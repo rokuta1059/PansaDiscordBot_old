@@ -15,14 +15,14 @@ from datetime import datetime, date, time
 client = discord.Client()
 conch = []
 hello = ['왜?', '무슨일?', '하이!', '응!', '짜잔!', '왜 불렀어?', '꺄!', '어엉?', '칫', '뭐']
-    
+
 def makeConch():
     f = open('magicConch.txt', 'r', encoding="utf8")
     readlist = f.read()
     f.close()
     global conch
     conch = readlist.split('\n')
-    
+
 def absurbDiary(inputInt):
     jsonFile = open('diary.json', encoding='utf8').read()
     data = json.loads(jsonFile)
@@ -45,10 +45,10 @@ def absurbFindAbsurb(search):
     jsonFile = open('diary.json', encoding='utf8').read()
     data = json.loads(jsonFile)
     for i in range(1, len(data) + 1):
-        if search in data[str(i)]['absurb']:
+        if search in data[str(i)]['absurb'] or search in data[str(i)]['description']:
             findAb.append(data[str(i)]['number'])
     return findAb
-    
+
 def addAbsurb(absurb, name, descript):
     jsonFile = open('diary.json', encoding='UTF8').read()
     data = json.loads(jsonFile)
@@ -71,20 +71,20 @@ def changeAbsurb(absurb, name, descript, num):
 
     return tmp
 
-def cypersRank(nickname):
+def cypersRank(nickname, game):
     parseNick = urllib.parse.quote(nickname)
     if game == "공식":
-        cypersURL ='http://cyphers.nexon.com/cyphers/game/record/search/1/' + parseNick + '/1'
+        cypersURL = 'http://cyphers.nexon.com/cyphers/game/record/search/1/' + parseNick + '/1'
     else:
-        cypersURL ='http://cyphers.nexon.com/cyphers/game/record/search/2/' + parseNick + '/2'
+        cypersURL = 'http://cyphers.nexon.com/cyphers/game/record/search/2/' + parseNick + '/2'
     with urllib.request.urlopen(cypersURL) as response:
         html = response.read()
         soup = BeautifulSoup(html, 'html.parser')
-    
+
     a = []
     battle = []
     img = []
-    
+
     for firstTable in soup.find_all("div", "info info1"):
         for firstValue in firstTable.find_all("td"):
             a.append(firstValue.get_text())
@@ -92,7 +92,7 @@ def cypersRank(nickname):
     for secondTable in soup.find_all("div", "info info2"):
         for secondValue in secondTable.find_all("td"):
             a.append(secondValue.get_text())
-    
+
     for battleTable in soup.find_all("li", "show"):
         for battleResult in battleTable.find_all("td"):
             battle.append(battleResult.get_text().replace(
@@ -122,13 +122,13 @@ def getMillDate(name):
         milldate = list(map(int, mill[1].split('.')))
         now = datetime.now()
         findDate = datetime(milldate[0], milldate[1], milldate[2]) - now
-        return "{0}쿤의 전역일은 {1}일 남았답니다~".format(mill[0], findDate.days)
+        return "{0}쿤의 전역일은 **{1}일** 남았답니다~".format(mill[0], findDate.days)
     else:
         return "{0}쿤은 군인이 아닌거 같아요~".format(name)
 
 def todayWeather(search):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = ''
+    client_secret = ''
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -164,8 +164,8 @@ def todayWeather(search):
     return weatherTable
 
 def tomorrowWeather(search):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = 'SxZxGJjLeHIrt7vvTBoa'
+    client_secret = 'zF2HteVJPm'
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -203,7 +203,7 @@ def tomorrowWeather(search):
     nextWeatherTable = [local, tomorrowTemp, tomorrowWeather, tomorrowDust, tomorrowTemp2, tomorrowWeather2, tomorrowDust2]
 
     return nextWeatherTable
-    
+
 def setXl():
     file = openpyxl.load_workbook("memoryData.xlsx")
     memoryData = file.active
@@ -219,7 +219,7 @@ def setMemory(inputData, outputData):
     memoryData = file.active
     for i in range(1, 501):
         if memoryData['A' + str(i)].value == inputData:
-            returnString = '{0}는 이미 기억하고 있는걸!'.format(inputData, memoryData['B' + str(i)].value)
+            returnString = '{0}는 이미 기억하고 있는걸!'.format(inputData)
             break
         elif memoryData['A' + str(i)].value == '-':
             if memoryData['B' + str(i)].value == None:
@@ -272,7 +272,7 @@ def findMemory(inputData):
         elif memoryData['A' + str(i)].value == '-' and memoryData['B' + str(i)].value == None:
             file.close()
             return '{0}이 뭔데? 난 모르는데!'.format(inputData)
-  
+
 def printMemory():
     file = openpyxl.load_workbook("memoryData.xlsx")
     memoryData = file.active
@@ -286,8 +286,8 @@ def printMemory():
     return memoryList
 
 def translate(source, target, text):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = ""
+    client_secret = ""
     encText = urllib.parse.quote(text)
     data = "source={0}&target={1}&text={2}".format(source, target, encText)
     url = "https://openapi.naver.com/v1/papago/n2mt"
@@ -309,7 +309,16 @@ def makeTaki():
     taki = takiData['A' + str(tmp)].value
     file.close()
     return taki
-    
+
+def makeChaerim():
+    file = openpyxl.load_workbook("charims.xlsx", data_only=True)
+    charimData = file.active
+    tmp = random.randint(1, charimData['B1'].value)
+    tmp2 = charimData['C1'].value
+    charim = tmp2 + charimData['A' + str(tmp)].value
+    file.close()
+    return charim
+
 def makeDietTable(dormitory, weekday):
     foodtable = []
 
@@ -363,8 +372,8 @@ def makeFortune(name):
         return '{0}의 오늘의 행운 지수는 {1}! 오늘 분명히 뭘 해도 안풀릴거니깐 각오하는게 좋은 날'.format(name, fortuneInt)
 
 def dice(count, value):
-    return list(map(lambda x: random.randint(1, value), range(count)))    
-    
+    return list(map(lambda x: random.randint(1, value), range(count)))
+
 @client.event
 async def on_ready():
     print('이몸 등장이올시다')
@@ -387,6 +396,7 @@ async def on_message(message):
         embed.add_field(name='!망언검색 (이름/내용) (검색어)', value='망언 검색해줌. 몇번인지 나옴.')
         embed.add_field(name='!선택', value='선택 장애인들이 넘치는 동아리를 위한 멋진 커맨드. 띄어쓰기로 나눠서 이것저것 입력하면 하나 골라줌.')
         embed.add_field(name='!타키, !taki', value='오늘의 타키쿤은?')
+        embed.add_field(name='!채림, !채릠, !chaerim', value='오늘의 채림쓰는?')
         embed.add_field(name='!소라고둥, 소라고둥님, 마법의소라고둥님, 마법의 소라고둥님', value='위대하신 소라고둥님의 말을 들을 수 있다.')
         embed.add_field(name='!전역일', value='군인님들 본명 OOO 입력하면 몇일 남았는지 알려줌. 추가되고 싶은 사람은 쥔장한테 ㄱㄱ')
         embed.add_field(name='!날씨, !오늘날씨', value='오늘날씨 알려줌. 지역 같이 입력하면 됨.')
@@ -406,6 +416,18 @@ async def on_message(message):
         embed.add_field(name='!모두모여', value='뒷문장 추가해서 전체멘션')
         embed.set_footer(text='강원대 판화사랑 동아리 컴정 15학번 과잠선배 제작')
         await message.channel.send(embed=embed)
+
+    if message.content.startswith('!!공지'):
+        mes = message.content.replace('!!공지', '').strip().split("/")
+        member = message.author
+        embed = discord.Embed(
+            title='{}'.format(mes[0]),
+            description='{}'.format(mes[1]),
+            colour=discord.Colour.blurple()
+        )
+        embed.set_footer(text='{0}이(가) 모두에게 전달중'.format(member.name),
+            icon_url=member.avatar_url)
+        await client.get_channel(584054673489657880).send(embed=embed)
 
     if message.content.startswith('!망언') or message.content.startswith('!diary'):
         if message.content.startswith('!망언검색'):
@@ -462,22 +484,25 @@ async def on_message(message):
                 colour=random.randint(0, 0xffffff)
             )
             await message.channel.send(embed=embed)
-        
+    
     if message.content.startswith('!타키') or message.content.startswith('!taki'):
         await message.channel.send(makeTaki())
-            
+
+    if message.content.startswith('!채림') or message.content.startswith('!채릠') or message.content.startswith('!chaerim'):
+        await message.channel.send(makeChaerim())
+
     if message.content.startswith('!선택'):
         mes = message.content.split(" ")
         del mes[0]
         await message.channel.send(random.choice(mes))
-        
+
     if message.content.startswith('!소라고둥') or message.content.startswith('소라고둥님') or message.content.startswith('마법의소라고둥님') or message.content.startswith('마법의 소라고둥님'):
         await message.channel.send(random.choice(conch))
-    
+
     if message.content.startswith('!전역일'):
         mes = message.content.split(" ")
         await message.channel.send(getMillDate(mes[1]))
-    
+
     if message.content.startswith('!사이퍼즈'):
         mes = message.content.split(" ")
         if mes[1] == '일반' or mes[1] == '공식':
@@ -488,9 +513,9 @@ async def on_message(message):
             nickURL, log, battleResult, imgURL = cypersRank(nickname, '')
 
         embed = discord.Embed(
-            title = '**CYPHERS**',
-            description = '사이퍼즈 전적입니다',
-            colour = discord.Colour.red(),
+            title='**CYPHERS**',
+            description='사이퍼즈 전적입니다',
+            colour=discord.Colour.red(),
         )
         if len(log) <= 4:
             embed.set_thumbnail(
@@ -500,7 +525,7 @@ async def on_message(message):
             embed.add_field(name='클랜', value=log[2])
             embed.add_field(name='승패 RP 등등', value='이번 시즌 공식전 기록이 없는 거시와요')
             await message.channel.send(embed=embed)
-        
+
         else:
             embed.set_thumbnail(
                 url='http://static.cyphers.co.kr/img/event/logo_bar.gif')
@@ -515,10 +540,10 @@ async def on_message(message):
 
         if mes[1] == '일반' or mes[1] == '공식':
             embed = discord.Embed(
-                title = '**가장 최근 경기 결과**',
-                url = nickURL,
-                description = '가장 최근에 플레이한 경기의 결과입니다.',
-                colour = discord.Colour.red()
+                title='**가장 최근 경기 결과**',
+                url=nickURL,
+                description='가장 최근에 플레이한 경기의 결과입니다.',
+                colour=discord.Colour.red()
             )
             embed.set_thumbnail(url=imgURL[0])
             embed.add_field(name='플레이 시간 및 결과', value=battleResult[0])
@@ -534,7 +559,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
     if message.content.startswith('!오늘날씨') or message.content.startswith('!날씨'):
-        mes = message.content.replace('!오늘날씨', '').replace('!날씨').strip()
+        mes = message.content.replace('!오늘날씨', '').replace('!날씨', '').strip()
         today = todayWeather(mes)
         embed = discord.Embed(
                 title='**날씨! 오늘! 날씨!**',
@@ -565,7 +590,7 @@ async def on_message(message):
         embed.add_field(name='미세먼지', value=tomorr[6])
         embed.set_footer(text='네이버 날씨 제공')
         await message.channel.send(embed=embed)
-        
+    
     if message.content.startswith('!기억'):
         mes = message.content.replace('!기억', '')
         mesTemp = setString(mes)
@@ -584,7 +609,7 @@ async def on_message(message):
         mes = message.content.replace('!말해', '').strip()
         result = findMemory(mes)
         await message.channel.send(result)
-        
+
     if message.content.startswith('요정아'):
         mes = message.content.replace('요정아', '').strip()
         if mes == '':
@@ -592,7 +617,7 @@ async def on_message(message):
         else :
             result = findMemory(mes)
             await message.channel.send(result)
-         
+    
     if message.content.startswith('!리스트'):
         memoryDataList = printMemory()
         printListStr = "```"
@@ -601,7 +626,7 @@ async def on_message(message):
         printListStr = printListStr + "```"
         await message.channel.send('내 머리속을 보고 싶어하다니...변태...')
         await message.channel.send(printListStr)
-        
+
     if message.content.startswith('!한일'):
         mes = message.content.replace('!한일', '').strip()
         transText = translate('ko', 'ja', mes)
@@ -645,7 +670,7 @@ async def on_message(message):
         )   
         embed.set_footer(text='Translated by.네이버 파파고')
         await message.channel.send(embed=embed)
-    
+
     if message.content.startswith('!재정') or message.content.startswith('!새롬') or message.content.startswith('!이룸'):
         dietTable = makeDietTable(message.content.replace('!', '').strip(), datetime.today().weekday())
         embed = discord.Embed(
@@ -657,19 +682,19 @@ async def on_message(message):
         embed.add_field(name='점심', value = dietTable[1])
         embed.add_field(name='저녁', value = dietTable[2])
         await message.channel.send(embed=embed)
-        
+    
     if message.content.startswith('!모두모여'):
         mes = message.content.replace('!모두모여', '').strip()
         await message.channel.send('@everyone ' + mes)
-        
+
     if message.content.startswith('!운세') or message.content.startswith('!fortune'):
         await message.channel.send(makeFortune(message.author.display_name))
-        
+
     if message.content.startswith('!fairy') or message.content.startswith('!요정수치'):
         await message.channel.send('{0}의 동방 요정수치는 무려 >>>{1}<<<씩이나 된다구?'.format(message.author.display_name, random.randint(1, 9999)))
 
     if message.content.startswith('!dice') or message.content.startswith('!주사위') or message.content.startswith("ㅈㅅㅇ"):
-        mes = message.content.replace("!dice", "").replace("!주사위", "").replace("ㅈㅅㅇ", "").strip().upper().split(' + ')
+        mes = message.content.replace("!dice", "").replace("!주사위", "").replace("ㅈㅅㅇ", "").strip().upper().split('+')
         result = 0
         embed = discord.Embed(
             title = '주사위 결과',
@@ -684,6 +709,6 @@ async def on_message(message):
             result = result + sum(diceResult)
         embed.add_field(name='주사위 총 합', value='{}'.format(result))
         await message.channel.send(embed=embed)
-        
+
 makeConch()
 client.run('TOKEN')
