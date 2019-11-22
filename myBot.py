@@ -127,8 +127,8 @@ def getMillDate(name):
         return "{0}쿤은 군인이 아닌거 같아요~".format(name)
 
 def todayWeather(search):
-    client_id = ''
-    client_secret = ''
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -164,8 +164,8 @@ def todayWeather(search):
     return weatherTable
 
 def tomorrowWeather(search):
-    client_id = 'SxZxGJjLeHIrt7vvTBoa'
-    client_secret = 'zF2HteVJPm'
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -286,8 +286,8 @@ def printMemory():
     return memoryList
 
 def translate(source, target, text):
-    client_id = ""
-    client_secret = ""
+    client_id = 'NAVER_CLIENT_ID'
+    client_secret = 'NAVER_CLIENT_SECRET'
     encText = urllib.parse.quote(text)
     data = "source={0}&target={1}&text={2}".format(source, target, encText)
     url = "https://openapi.naver.com/v1/papago/n2mt"
@@ -384,12 +384,12 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    
+
     if message.content.startswith('!도움'):
         embed = discord.Embed(
-            title = '**판 사 요 정 등 장**',
-            description = '이거슨 판사 요정 커맨드 리스트',
-            colour = discord.Colour.green(),
+            title='**판 사 요 정 등 장**',
+            description='이거슨 판사 요정 커맨드 리스트',
+            colour=discord.Colour.green()
         )
         embed.set_thumbnail(url=client.user.avatar_url)
         embed.add_field(name='!망언, !diary', value='판사 역대 망언 출력해줌. 숫자 같이 입력하면 해당 번호 망언 나옴.')
@@ -427,7 +427,7 @@ async def on_message(message):
         )
         embed.set_footer(text='{0}이(가) 모두에게 전달중'.format(member.name),
             icon_url=member.avatar_url)
-        await client.get_channel(584054673489657880).send(embed=embed)
+        await client.get_channel('TEXT_CHANNEL_ID').send(embed=embed)
 
     if message.content.startswith('!망언') or message.content.startswith('!diary'):
         if message.content.startswith('!망언검색'):
