@@ -7,6 +7,10 @@ from bs4 import BeautifulSoup
 import urllib.request
 from datetime import datetime, date, time
 
+# Naver Developer 페이지에서 받아온 토큰을 입력합니다.
+naver_client_id = 'NAVER_CLIENT_ID'
+naver_client_pw = 'NAVER_CLIENT_PW'
+
 def makeConch(conch):
     f = open('magicConch.txt', 'r', encoding="utf8")
     readlist = f.read()
@@ -118,8 +122,8 @@ def getMillDate(name):
         return "{0}쿤은 군인이 아닌거 같아요~".format(name)
 
 def todayWeather(search):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = naver_client_id
+    client_secret = naver_client_pw
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -155,8 +159,8 @@ def todayWeather(search):
     return weatherTable
 
 def tomorrowWeather(search):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = naver_client_id
+    client_secret = naver_client_pw
     encText = urllib.parse.quote(search + ' 날씨')
     url = 'https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' + encText
     request = urllib.request.Request(url)
@@ -277,8 +281,8 @@ def printMemory():
     return memoryList
 
 def translate(source, target, text):
-    client_id = 'NAVER_CLIENT_ID'
-    client_secret = 'NAVER_CLIENT_SECRET'
+    client_id = naver_client_id
+    client_secret = naver_client_pw
     encText = urllib.parse.quote(text)
     data = "source={0}&target={1}&text={2}".format(source, target, encText)
     url = "https://openapi.naver.com/v1/papago/n2mt"

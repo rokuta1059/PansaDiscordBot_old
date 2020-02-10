@@ -8,7 +8,7 @@ import random
 from discord.ext import commands
 from datetime import datetime, date, time
 
-from myBot import *
+from fairyFunc import *
 
 client = discord.Client()
 conch = []
@@ -67,7 +67,7 @@ async def on_message(message):
         )
         embed.set_footer(text='{0}이(가) 모두에게 전달중'.format(member.name),
             icon_url=member.avatar_url)
-        await client.get_channel('TEXT_CHANNEL_ID').send(embed=embed)
+        await client.get_channel(int(mes[2])).send(embed=embed)
 
     if message.content.startswith('!망언') or message.content.startswith('!diary'):
         if message.content.startswith('!망언검색'):
@@ -351,4 +351,4 @@ async def on_message(message):
         await message.channel.send(embed=embed)
 
 conch = makeConch(conch)
-client.run('TOKEN')
+client.run('NjA0NjQzMjI3NzgxMzAwMjUw.Xd-YmA.5Ycb46urfQCFas--A0hXxbYy3JM')
