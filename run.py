@@ -351,4 +351,4 @@ async def on_message(message):
         await message.channel.send(embed=embed)
 
 conch = makeConch(conch)
-client.run('NjA0NjQzMjI3NzgxMzAwMjUw.Xd-YmA.5Ycb46urfQCFas--A0hXxbYy3JM')
+client.run('TOKEN')
